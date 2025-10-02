@@ -242,6 +242,7 @@ public class TelephonyProviderTest {
             int arbitraryIntVal, String arbitraryStringVal) {
         ContentValues contentValues = new ContentValues();
 
+        contentValues.put(SimInfo.COLUMN_EXT_SIM_STATE, arbitraryStringVal);
         contentValues.put(Telephony.SimInfo.COLUMN_UNIQUE_KEY_SUBSCRIPTION_ID, arbitraryIntVal);
         contentValues.put(Telephony.SimInfo.COLUMN_ICC_ID, iccId);
         contentValues.put(Telephony.SimInfo.COLUMN_NUMBER, phoneNumber);
@@ -785,6 +786,10 @@ public class TelephonyProviderTest {
 
         // insert test contentValues
         ContentValues contentValues = new ContentValues();
+        final String insertExtSimState = "CkESHQoZaGlkZV9lbmhhbmNlZF80Z19sdGVfYm9vbCgAEiAKHGNhcnJp"
+                + "ZXJfdm9sdGVfYXZhaWxh\n"
+                + "YmxlX2Jvb2woAQ==";
+        contentValues.put(SubscriptionManager.EXT_SIM_STATE, insertExtSimState);
         final int insertSubId = 11;
         final String insertDisplayName = "exampleDisplayName";
         final String insertCarrierName = "exampleCarrierName";
@@ -883,6 +888,14 @@ public class TelephonyProviderTest {
         String[] selectionArgs = { insertDisplayName };
         Log.d(TAG,"\ntestSimTable selection: " + selection
                 + "\ntestSimTable selectionArgs: " + Arrays.toString(selectionArgs));
+        {
+            Cursor cursor = mContentResolver.query(SimInfo.CONTENT_URI,
+                new String[] { SubscriptionManager.EXT_SIM_STATE }, selection, selectionArgs, null);
+                    assertNotNull(cursor);
+            assertEquals(1, cursor.getCount());
+            cursor.moveToFirst();
+            assertEquals(insertExtSimState, cursor.getString(0));
+        }
         Cursor cursor = mContentResolver.query(SimInfo.CONTENT_URI,
                 testProjection, selection, selectionArgs, null);
 
@@ -1037,6 +1050,9 @@ public class TelephonyProviderTest {
         assertEquals(ARBITRARY_SIMINFO_DB_TEST_STRING_VALUE_1,
                 getStringValueFromCursor(cursor,
                         SimInfo.COLUMN_SATELLITE_ENTITLEMENT_VOICE_SERVICE_POLICY));
+        assertEquals(ARBITRARY_SIMINFO_DB_TEST_STRING_VALUE_1,
+                getStringValueFromCursor(cursor,
+                        SimInfo.COLUMN_EXT_SIM_STATE));
         assertRestoredSubIdIsRemembered();
     }
 
